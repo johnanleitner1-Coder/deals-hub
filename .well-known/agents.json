@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "name": "LastMinuteDeals",
+  "description": "Real-time last-minute booking aggregator. Book open slots in events, wellness, beauty, and hospitality within 72 hours.",
+  "url": "https://lastminutedealshq.com",
+  "api": {
+    "type": "openapi",
+    "url": "https://lastminutedealshq.com/openapi.json"
+  },
+  "capabilities": [
+    "search",
+    "book",
+    "availability_check"
+  ],
+  "contact": {
+    "email": "support@lastminutedealshq.com"
+  }
+}
