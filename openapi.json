@@ -528,6 +528,299 @@
         }
       }
     },
+    "/execute/guaranteed": {
+      "post": {
+        "operationId": "executeGuaranteed",
+        "summary": "Guaranteed booking \u2014 hard outcome, multi-path retry engine",
+        "description": "The most powerful booking endpoint. Provide intent + customer + payment method. Engine tries up to 7 strategies (original slot, retry, similar slot, different platform, metro area, alternative category) and returns only when outcome is known. Requires wallet_id (pre-funded, instant) or payment_intent_id (Stripe hold). Returns full attempt log and execution confidence score.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "customer"
+                ],
+                "properties": {
+                  "slot_id": {
+                    "type": "string",
+                    "description": "Preferred slot \u2014 engine falls back if unavailable"
+                  },
+                  "category": {
+                    "type": "string",
+                    "enum": [
+                      "wellness",
+                      "beauty",
+                      "hospitality",
+                      "entertainment",
+                      "home_services",
+                      "professional_services"
+                    ]
+                  },
+                  "city": {
+                    "type": "string"
+                  },
+                  "hours_ahead": {
+                    "type": "integer",
+                    "default": 24
+                  },
+                  "budget": {
+                    "type": "number"
+                  },
+                  "allow_alternatives": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Allow fallback to different category if no match found"
+                  },
+                  "customer": {
+                    "type": "object",
+                    "required": [
+                      "name",
+                      "email",
+                      "phone"
+                    ],
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "email": {
+                        "type": "string",
+                        "format": "email"
+                      },
+                      "phone": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "wallet_id": {
+                    "type": "string",
+                    "description": "Pre-funded agent wallet \u2014 fastest, no Stripe roundtrip"
+                  },
+                  "payment_intent_id": {
+                    "type": "string",
+                    "description": "Existing Stripe manual-capture PaymentIntent to capture on success"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Booking confirmed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "booked",
+                        "failed",
+                        "no_slots"
+                      ]
+                    },
+                    "confirmation": {
+                      "type": "string"
+                    },
+                    "slot_id": {
+                      "type": "string"
+                    },
+                    "service_name": {
+                      "type": "string"
+                    },
+                    "price_charged": {
+                      "type": "number"
+                    },
+                    "attempts": {
+                      "type": "integer"
+                    },
+                    "fallbacks_used": {
+                      "type": "integer"
+                    },
+                    "savings_vs_market": {
+                      "type": "number"
+                    },
+                    "confidence_score": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "attempt_log": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No matching slots found"
+          },
+          "500": {
+            "description": "All booking attempts failed"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/api/wallets/create": {
+      "post": {
+        "operationId": "createWallet",
+        "summary": "Create an agent pre-funded wallet",
+        "description": "Create a wallet for instant bookings without per-booking Stripe redirects. Fund it once, book many times. Ideal for high-volume AI agents.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "email"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Wallet created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "wallet_id": {
+                      "type": "string"
+                    },
+                    "api_key": {
+                      "type": "string"
+                    },
+                    "balance": {
+                      "type": "number"
+                    },
+                    "fund_instructions": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/wallets/fund": {
+      "post": {
+        "operationId": "fundWallet",
+        "summary": "Generate a Stripe payment link to fund a wallet",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "wallet_id",
+                  "amount_dollars"
+                ],
+                "properties": {
+                  "wallet_id": {
+                    "type": "string"
+                  },
+                  "amount_dollars": {
+                    "type": "number",
+                    "minimum": 5,
+                    "maximum": 5000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Checkout URL for funding"
+          }
+        }
+      }
+    },
+    "/api/wallets/{wallet_id}/balance": {
+      "get": {
+        "operationId": "walletBalance",
+        "summary": "Check wallet balance",
+        "parameters": [
+          {
+            "name": "wallet_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current balance in dollars"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/api/watcher/status": {
+      "get": {
+        "operationId": "watcherStatus",
+        "summary": "Real-time watcher health and data freshness",
+        "description": "Check how fresh the slot data is. The real-time watcher updates slots every 45s on active platforms. Use this to assess confidence before submitting a guaranteed booking.",
+        "responses": {
+          "200": {
+            "description": "Watcher status per platform",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "running": {
+                      "type": "boolean"
+                    },
+                    "platforms": {
+                      "type": "object",
+                      "description": "Per-platform status with last_poll timestamp"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "operationId": "healthCheck",
