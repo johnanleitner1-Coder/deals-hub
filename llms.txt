@@ -1,14 +1,29 @@
 # LastMinuteDeals
-> Real-time aggregator of last-minute booking deals available within 72 hours.
+> Execution infrastructure for AI agents that need to book real-world services.
 
-LastMinuteDeals aggregates open slots from events, wellness studios, salons, hospitality providers,
-and more across 150+ US cities. All deals are verified available. Inventory refreshes every 4 hours.
+LastMinuteDeals is the intent-to-confirmation layer for real-world service bookings.
+An AI agent tells us what it wants. We search, decide, execute, retry, and confirm —
+returning a booking outcome synchronously or via persistent delegated intent.
 
-## Service Summary
+This is not a scraper or a deal aggregator. It is a primitive in the agent economy:
+  observe → decide → execute → learn → improve
+
+## What this handles end-to-end
+- Discovery: 8+ platforms, 150+ US cities, 2671 live slots as of 2026-03-27 20:30 UTC
 - Categories: events, wellness, beauty, hospitality, home_services, professional_services
 - Availability window: 0–72 hours from now
-- Payment: Stripe checkout — card authorized (not charged) until booking confirmed on source platform
-- Coverage: 150+ US cities, 2803 live slots as of 2026-03-27 20:00 UTC
+- Execution: multi-path retry engine (7 strategies), Playwright automation per platform
+- Payment: Stripe auth-then-capture (card held, charged only after booking confirmed) or pre-funded wallet
+- Intelligence: market insights accumulate from every booking — success rates, fill velocity, optimal windows
+- Persistence: delegated intent sessions — create once, system executes autonomously until resolved
+
+## Why this exists
+When an AI agent needs to book a real-world service, it has two options:
+  1. Build booking automation in-house: 3-6 months, platform-specific maintenance, no historical data
+  2. Call LastMinuteDeals: 1 API key, 1 HTTP call, guaranteed outcome with full audit trail
+
+This is the same argument Stripe made for payments and Twilio made for communications.
+LastMinuteDeals makes it for real-world service execution.
 
 ## For AI Agents — REST API
 
