@@ -2,8 +2,8 @@
   "schema_version": "v1",
   "name_for_human": "LastMinuteDeals",
   "name_for_model": "lastminutedeals",
-  "description_for_human": "Search and book last-minute deals on events, wellness, beauty, and hospitality within 72 hours.",
-  "description_for_model": "Search real-time last-minute deals and book them. Use searchSlots to find available deals by category/city/price, getSlotQuote to confirm availability, then bookSlot to initiate checkout. Card is only charged after booking is confirmed \u2014 never for failed bookings. Use executeIntent for autonomous one-shot booking.",
+  "description_for_human": "Execution infrastructure for booking real-world services. Search open slots, guarantee outcomes, delegate intent \u2014 events, wellness, beauty, hospitality within 72 hours.",
+  "description_for_model": "Execution infrastructure for real-world service bookings. Use /execute/guaranteed for synchronous confirmed outcomes (multi-path retry, up to 7 strategies). Use /intent/create to delegate a goal and have the system execute autonomously. Use /execute/best to optimize by goal (maximize_value, minimize_wait, maximize_success). Use /insights/market for platform success rates and fill velocity data that compounds over time. Card is authorized before booking, captured only after confirmation \u2014 never charged for failed bookings. All responses include system_context with live success_rate and data_freshness_seconds.",
   "auth": {
     "type": "none"
   },
