@@ -1,0 +1,282 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "LastMinuteDeals API",
+    "description": "Real-time last-minute booking deals. Search open slots and book them. Card is authorized (not charged) until booking is confirmed on the source platform.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "LastMinuteDeals",
+      "url": "https://lastminutedealshq.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://lastminutedealshq.com",
+      "description": "Booking API"
+    }
+  ],
+  "paths": {
+    "/slots": {
+      "get": {
+        "operationId": "searchSlots",
+        "summary": "Search available last-minute deals",
+        "description": "Returns available deals within the next 72 hours. Filter by category, city, price.",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "events",
+                "wellness",
+                "beauty",
+                "hospitality",
+                "home_services",
+                "professional_services"
+              ]
+            }
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "City name (e.g. 'New York', 'Chicago')"
+          },
+          {
+            "name": "hours_ahead",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 72
+            },
+            "description": "Only return deals starting within this many hours"
+          },
+          {
+            "name": "max_price",
+            "in": "query",
+            "schema": {
+              "type": "number"
+            },
+            "description": "Maximum price in USD"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of available slots",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Slot"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/slots/{slot_id}/quote": {
+      "get": {
+        "operationId": "getSlotQuote",
+        "summary": "Check availability and get confirmed price for a specific slot",
+        "parameters": [
+          {
+            "name": "slot_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Slot available"
+          },
+          "404": {
+            "description": "Slot unavailable or expired"
+          }
+        }
+      }
+    },
+    "/api/book": {
+      "post": {
+        "operationId": "bookSlot",
+        "summary": "Book a slot \u2014 creates Stripe Checkout session",
+        "description": "Card is authorized (not charged) until booking is confirmed on source platform. On failure, hold is released automatically.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "slot_id",
+                  "customer_name",
+                  "customer_email",
+                  "customer_phone"
+                ],
+                "properties": {
+                  "slot_id": {
+                    "type": "string"
+                  },
+                  "customer_name": {
+                    "type": "string"
+                  },
+                  "customer_email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "customer_phone": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Checkout session created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "checkout_url": {
+                      "type": "string",
+                      "description": "Redirect user here to complete Stripe payment"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/execute": {
+      "post": {
+        "operationId": "executeIntent",
+        "summary": "Autonomous booking \u2014 provide intent, get booking",
+        "description": "Agent-native endpoint. Provide a natural-language intent or structured criteria. System selects the best matching slot and initiates booking automatically.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "intent": {
+                    "type": "string",
+                    "description": "Natural language, e.g. 'book a yoga class in Seattle tomorrow morning'"
+                  },
+                  "category": {
+                    "type": "string"
+                  },
+                  "city": {
+                    "type": "string"
+                  },
+                  "budget": {
+                    "type": "number"
+                  },
+                  "hours_ahead": {
+                    "type": "integer",
+                    "default": 24
+                  },
+                  "customer": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "email": {
+                        "type": "string"
+                      },
+                      "phone": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Best match selected and booking initiated"
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "healthCheck",
+        "summary": "API health + live slot count",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Slot": {
+        "type": "object",
+        "properties": {
+          "slot_id": {
+            "type": "string"
+          },
+          "platform": {
+            "type": "string"
+          },
+          "service_name": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "start_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "hours_until_start": {
+            "type": "number"
+          },
+          "our_price": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string",
+            "default": "USD"
+          },
+          "location_city": {
+            "type": "string"
+          },
+          "location_state": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
