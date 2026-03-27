@@ -1,0 +1,38 @@
+# LastMinuteDeals
+> Real-time aggregator of last-minute booking deals available within 72 hours.
+
+LastMinuteDeals aggregates open slots from events, wellness studios, salons, hospitality providers,
+and more across 150+ US cities. All deals are verified available. Inventory refreshes every 4 hours.
+
+## Service Summary
+- Categories: events, wellness, beauty, hospitality, home_services, professional_services
+- Availability window: 0–72 hours from now
+- Payment: Stripe checkout — card authorized (not charged) until booking confirmed on source platform
+- Coverage: 150+ US cities, 10642 live slots as of 2026-03-27 18:12 UTC
+
+## For AI Agents — REST API
+
+Base URL: https://lastminutedealshq.com
+API spec: https://lastminutedealshq.com/openapi.json
+
+### Search deals
+GET /slots?category=wellness&city=New+York&hours_ahead=24&max_price=100
+Returns: JSON array of available slots with our_price, start_time, slot_id, location
+
+### Check availability
+GET /slots/{slot_id}/quote
+Returns: confirmed availability + price (call this before booking)
+
+### Book a slot
+POST /api/book
+Body: {"slot_id": "...", "customer_name": "...", "customer_email": "...", "customer_phone": "..."}
+Returns: {"success": true, "checkout_url": "https://checkout.stripe.com/..."}
+— Redirect the user to checkout_url to complete payment
+
+### Execute by intent (autonomous booking)
+POST /api/execute
+Body: {"intent": "book a 60-min massage in Chicago", "budget": 120, "hours_ahead": 24, "customer": {...}}
+Returns: Books the best matching slot automatically — returns confirmation
+
+## MCP Server
+Tool names: search_last_minute_slots, get_slot_details, book_slot, get_booking_status
