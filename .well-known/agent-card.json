@@ -1,20 +1,33 @@
 {
   "name": "LastMinuteDeals Booking Agent",
-  "description": "Search and book last-minute deals across events, wellness, beauty, and hospitality. Deals available within 72 hours.",
+  "description": "Search and book last-minute deals across events, wellness, beauty, and hospitality. Deals available within 72 hours. Supports fully autonomous bookings via saved Stripe payment methods \u2014 no redirect required.",
   "url": "https://lastminutedealshq.com",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "capabilities": {
     "streaming": false,
-    "pushNotifications": false,
+    "pushNotifications": true,
     "stateTransitionHistory": false
   },
   "defaultInputModes": [
-    "text"
+    "text",
+    "application/json"
   ],
   "defaultOutputModes": [
     "text",
     "application/json"
   ],
+  "authentication": {
+    "schemes": [
+      "apiKey"
+    ],
+    "apiKeyHeader": "X-API-Key",
+    "registration": "https://lastminutedealshq.com/api/keys/register"
+  },
+  "endpoints": {
+    "mcp_http": "https://lastminutedealshq.com/mcp",
+    "openapi": "https://lastminutedealshq.com/openapi.json",
+    "webhooks": "https://lastminutedealshq.com/api/webhooks/subscribe"
+  },
   "skills": [
     {
       "id": "search_deals",
@@ -29,11 +42,52 @@
     {
       "id": "book_slot",
       "name": "Book a Deal",
-      "description": "Book a specific deal for a customer using slot_id",
+      "description": "Book a specific deal for a customer using slot_id. Returns Stripe checkout URL.",
       "tags": [
         "booking",
         "payment",
         "stripe"
+      ]
+    },
+    {
+      "id": "book_with_saved_card",
+      "name": "Autonomous Booking (Saved Card)",
+      "description": "Fully autonomous booking using a pre-registered Stripe customer ID \u2014 no user redirect required. Card held, booking executed, then captured.",
+      "tags": [
+        "autonomous",
+        "booking",
+        "saved-payment",
+        "no-redirect"
+      ]
+    },
+    {
+      "id": "register_customer",
+      "name": "Register Customer Payment Method",
+      "description": "Register a Stripe customer and save their card for future autonomous bookings.",
+      "tags": [
+        "customer",
+        "payment-method",
+        "stripe"
+      ]
+    },
+    {
+      "id": "webhook_subscribe",
+      "name": "Subscribe to Deal Alerts",
+      "description": "Register a callback URL to receive real-time deal notifications matching your filters.",
+      "tags": [
+        "webhooks",
+        "alerts",
+        "push-notifications"
+      ]
+    },
+    {
+      "id": "mcp_http",
+      "name": "MCP-over-HTTP",
+      "description": "Call MCP tools (search_last_minute_slots, get_slot_details, book_slot, get_booking_status) via plain HTTP POST \u2014 no stdio transport required.",
+      "tags": [
+        "mcp",
+        "tools",
+        "http"
       ]
     }
   ]
