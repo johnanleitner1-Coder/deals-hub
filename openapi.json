@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "LastMinuteDeals API",
-    "description": "Real-time last-minute booking deals. Search open slots and book them. Card is authorized (not charged) until booking is confirmed on the source platform.",
+    "title": "LastMinuteDeals Execution API",
+    "description": "Execution infrastructure for AI agents booking real-world services. Intent-to-confirmation pipeline: search \u2192 decide \u2192 guarantee \u2192 confirm. Multi-path retry engine, pre-funded wallets, delegated intent sessions, market intelligence. Card authorized (not charged) until booking confirmed on source platform.",
     "version": "1.0.0",
     "contact": {
       "name": "LastMinuteDeals",
