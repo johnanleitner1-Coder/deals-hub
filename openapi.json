@@ -528,6 +528,391 @@
         }
       }
     },
+    "/execute/best": {
+      "post": {
+        "operationId": "executeBest",
+        "summary": "Goal-oriented decisioning \u2014 tell us what you want, we decide what to book",
+        "description": "Unlike /execute/guaranteed (which needs a slot hint), this endpoint optimizes across ALL inventory to find the best option given your goal. Goals: maximize_value (best discount), minimize_wait (soonest slot), maximize_success (highest platform reliability), minimize_price. Returns full ExecutionResult with optional explanation.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "customer"
+                ],
+                "properties": {
+                  "goal": {
+                    "type": "string",
+                    "enum": [
+                      "maximize_value",
+                      "minimize_wait",
+                      "maximize_success",
+                      "minimize_price"
+                    ],
+                    "default": "maximize_value"
+                  },
+                  "city": {
+                    "type": "string"
+                  },
+                  "category": {
+                    "type": "string"
+                  },
+                  "budget": {
+                    "type": "number"
+                  },
+                  "hours_ahead": {
+                    "type": "integer",
+                    "default": 48
+                  },
+                  "customer": {
+                    "type": "object",
+                    "required": [
+                      "name",
+                      "email",
+                      "phone"
+                    ],
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "email": {
+                        "type": "string",
+                        "format": "email"
+                      },
+                      "phone": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "wallet_id": {
+                    "type": "string"
+                  },
+                  "payment_intent_id": {
+                    "type": "string"
+                  },
+                  "explain": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Include reasoning for why this slot was chosen"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Best option found and booked"
+          },
+          "404": {
+            "description": "No matching inventory"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/intent/create": {
+      "post": {
+        "operationId": "intentCreate",
+        "summary": "Create a persistent intent \u2014 the system works on your goal until done",
+        "description": "The most powerful way to use LastMinuteDeals as infrastructure. Create an intent and forget it. The system monitors continuously, and when matching slots appear, auto-executes the booking and notifies you via callback_url. Supports three autonomy levels: 'full' (auto-execute), 'notify' (alert you first), 'monitor' (never execute).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "goal"
+                ],
+                "properties": {
+                  "goal": {
+                    "type": "string",
+                    "enum": [
+                      "find_and_book",
+                      "monitor_only",
+                      "price_alert"
+                    ],
+                    "description": "find_and_book: auto-execute when match found. monitor_only: notify only. price_alert: notify when price drops below target."
+                  },
+                  "constraints": {
+                    "type": "object",
+                    "properties": {
+                      "category": {
+                        "type": "string"
+                      },
+                      "city": {
+                        "type": "string"
+                      },
+                      "budget": {
+                        "type": "number"
+                      },
+                      "hours_ahead": {
+                        "type": "integer",
+                        "default": 48
+                      },
+                      "allow_alternatives": {
+                        "type": "boolean",
+                        "default": true
+                      },
+                      "price_target": {
+                        "type": "number",
+                        "description": "For price_alert goal: notify when price drops below this"
+                      }
+                    }
+                  },
+                  "customer": {
+                    "type": "object",
+                    "description": "Required for find_and_book",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "email": {
+                        "type": "string",
+                        "format": "email"
+                      },
+                      "phone": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "payment": {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "enum": [
+                          "wallet",
+                          "stripe_pi"
+                        ]
+                      },
+                      "wallet_id": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "autonomy": {
+                    "type": "string",
+                    "enum": [
+                      "full",
+                      "notify",
+                      "monitor"
+                    ],
+                    "default": "full"
+                  },
+                  "callback_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "POST status changes here"
+                  },
+                  "ttl_hours": {
+                    "type": "integer",
+                    "default": 24,
+                    "description": "Auto-expire after this many hours"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Intent created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "intent_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "expires_at": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/intent/{intent_id}": {
+      "get": {
+        "operationId": "intentGet",
+        "summary": "Get intent session status and result",
+        "parameters": [
+          {
+            "name": "intent_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Intent session details"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/intent/{intent_id}/execute": {
+      "post": {
+        "operationId": "intentExecute",
+        "summary": "Manually trigger a 'notify' autonomy intent",
+        "description": "For intents with autonomy='notify': call this after receiving a slots_available callback to approve and execute the booking.",
+        "parameters": [
+          {
+            "name": "intent_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Execution triggered"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/intent/{intent_id}/cancel": {
+      "post": {
+        "operationId": "intentCancel",
+        "summary": "Cancel an active intent session",
+        "parameters": [
+          {
+            "name": "intent_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cancelled"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/intent/list": {
+      "get": {
+        "operationId": "intentList",
+        "summary": "List all your intent sessions",
+        "responses": {
+          "200": {
+            "description": "Array of intent summaries"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/insights/market": {
+      "get": {
+        "operationId": "insightsMarket",
+        "summary": "Market intelligence \u2014 success rates, fill velocity, optimal booking windows",
+        "description": "Aggregated data from all booking attempts across all platforms, compounded over time. Includes: platform reliability scores, category/city success rates, fill velocity per category, optimal booking windows, live inventory. This data advantage is not reproducible from a standing start.",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter to specific category"
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter to specific city"
+          },
+          {
+            "name": "refresh",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "0",
+                "1"
+              ]
+            },
+            "description": "Force rebuild from raw data"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Market snapshot"
+          }
+        }
+      }
+    },
+    "/insights/platform/{platform_name}": {
+      "get": {
+        "operationId": "insightsPlatform",
+        "summary": "Per-platform reliability and performance stats",
+        "parameters": [
+          {
+            "name": "platform_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Platform performance data"
+          }
+        }
+      }
+    },
     "/execute/guaranteed": {
       "post": {
         "operationId": "executeGuaranteed",
@@ -812,6 +1197,83 @@
                     "platforms": {
                       "type": "object",
                       "description": "Per-platform status with last_poll timestamp"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/metrics": {
+      "get": {
+        "operationId": "publicMetrics",
+        "summary": "Public performance metrics \u2014 no auth required",
+        "description": "Live system metrics: success rate, bookable slot count, cities covered, data freshness, active intent sessions. Intentionally public \u2014 choosing LastMinuteDeals should be a rational decision based on observable data.",
+        "responses": {
+          "200": {
+            "description": "System metrics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "inventory": {
+                      "type": "object",
+                      "properties": {
+                        "total_slots": {
+                          "type": "integer"
+                        },
+                        "bookable_slots": {
+                          "type": "integer"
+                        },
+                        "categories": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "cities_covered": {
+                          "type": "integer"
+                        },
+                        "next_slot_hours": {
+                          "type": "number"
+                        }
+                      }
+                    },
+                    "performance": {
+                      "type": "object",
+                      "properties": {
+                        "success_rate": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        "total_bookings": {
+                          "type": "integer"
+                        },
+                        "fallback_rate": {
+                          "type": "number"
+                        }
+                      }
+                    },
+                    "infrastructure": {
+                      "type": "object",
+                      "properties": {
+                        "realtime_watcher": {
+                          "type": "boolean"
+                        },
+                        "data_freshness_seconds": {
+                          "type": "integer"
+                        },
+                        "active_intent_sessions": {
+                          "type": "integer"
+                        },
+                        "registered_wallets": {
+                          "type": "integer"
+                        }
+                      }
                     }
                   }
                 }
