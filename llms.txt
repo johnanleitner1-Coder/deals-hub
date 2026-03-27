@@ -8,7 +8,7 @@ and more across 150+ US cities. All deals are verified available. Inventory refr
 - Categories: events, wellness, beauty, hospitality, home_services, professional_services
 - Availability window: 0–72 hours from now
 - Payment: Stripe checkout — card authorized (not charged) until booking confirmed on source platform
-- Coverage: 150+ US cities, 2902 live slots as of 2026-03-27 19:00 UTC
+- Coverage: 150+ US cities, 2791 live slots as of 2026-03-27 19:30 UTC
 
 ## For AI Agents — REST API
 
@@ -33,6 +33,21 @@ Returns: {"success": true, "checkout_url": "https://checkout.stripe.com/..."}
 POST /api/execute
 Body: {"intent": "book a 60-min massage in Chicago", "budget": 120, "hours_ahead": 24, "customer": {...}}
 Returns: Books the best matching slot automatically — returns confirmation
+
+### Guaranteed execution (hard outcome, multi-path retry engine)
+POST /execute/guaranteed
+Body: {"category": "wellness", "city": "NYC", "hours_ahead": 24, "customer": {...}, "wallet_id": "wlt_..."}
+Returns: Synchronous outcome — "booked" or "failed". Up to 7 fallback strategies tried automatically.
+Requires: wallet_id (pre-funded agent wallet) OR payment_intent_id (Stripe manual-capture hold)
+Response includes: confidence_score, attempts, fallbacks_used, savings_vs_market, attempt_log
+
+### Agent wallets (pre-funded accounts for instant booking)
+POST /api/wallets/create   — Create a wallet (no Stripe roundtrip per booking)
+POST /api/wallets/fund     — Get Stripe checkout link to fund wallet
+GET  /api/wallets/{wallet_id}/balance  — Check balance (requires X-API-Key)
+
+### Real-time watcher status
+GET /api/watcher/status    — Check data freshness (slots updated every ~45s when watcher is running)
 
 ## MCP Server
 Tool names: search_last_minute_slots, get_slot_details, book_slot, get_booking_status
