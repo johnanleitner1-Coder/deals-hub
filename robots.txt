@@ -1,0 +1,36 @@
+User-agent: *
+Allow: /
+
+# AI search crawlers — crawl allowed, will not be blocked
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+User-agent: DuckAssistBot
+Allow: /
+
+# Training crawlers — block (search is fine, training is not)
+User-agent: CCBot
+Disallow: /
+
+Sitemap: https://lastminutedealshq.com/sitemap.xml
