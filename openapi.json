@@ -226,6 +226,308 @@
         }
       }
     },
+    "/api/keys/register": {
+      "post": {
+        "operationId": "registerApiKey",
+        "summary": "Register for a free API key",
+        "description": "Register with name and email to receive a free API key. Required as X-API-Key header on POST /api/book and POST /api/execute.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "email"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Your name or agent name"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "API key issued",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "api_key": {
+                      "type": "string",
+                      "description": "Use as X-API-Key header"
+                    },
+                    "instructions": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/customers/register": {
+      "post": {
+        "operationId": "registerCustomer",
+        "summary": "Register a customer and save their Stripe payment method",
+        "description": "Step 1: Register to get a setup_url. Step 2: Customer visits setup_url once to save card. Step 3: Use stripe_customer_id in /api/customers/{customer_id}/book for fully autonomous bookings with no redirect.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Customer created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "stripe_customer_id": {
+                      "type": "string"
+                    },
+                    "setup_url": {
+                      "type": "string",
+                      "description": "Customer visits this once to save their card"
+                    },
+                    "instructions": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/customers/{customer_id}/book": {
+      "post": {
+        "operationId": "bookWithSavedCard",
+        "summary": "Fully autonomous booking using a saved Stripe payment method \u2014 no redirect required",
+        "description": "Card is authorized (held), booking is executed on source platform, then captured. If booking fails, hold is cancelled and customer is not charged.",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Stripe customer ID (cus_...)"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "slot_id",
+                  "customer_name",
+                  "customer_email",
+                  "customer_phone"
+                ],
+                "properties": {
+                  "slot_id": {
+                    "type": "string"
+                  },
+                  "customer_name": {
+                    "type": "string"
+                  },
+                  "customer_email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "customer_phone": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Booking confirmed and payment captured"
+          },
+          "402": {
+            "description": "Card declined"
+          },
+          "404": {
+            "description": "Slot not found"
+          },
+          "409": {
+            "description": "Already booked"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/api/webhooks/subscribe": {
+      "post": {
+        "operationId": "webhookSubscribe",
+        "summary": "Subscribe to deal alerts via webhook",
+        "description": "Register a callback URL to receive POST notifications when new matching deals are available.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "callback_url"
+                ],
+                "properties": {
+                  "callback_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "URL to POST new deals to"
+                  },
+                  "filters": {
+                    "type": "object",
+                    "properties": {
+                      "city": {
+                        "type": "string"
+                      },
+                      "category": {
+                        "type": "string"
+                      },
+                      "max_price": {
+                        "type": "number"
+                      },
+                      "hours_ahead": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Subscription created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "subscription_id": {
+                      "type": "string"
+                    },
+                    "callback_url": {
+                      "type": "string"
+                    },
+                    "filters": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mcp": {
+      "post": {
+        "operationId": "mcpHttp",
+        "summary": "MCP-over-HTTP \u2014 call MCP tools without stdio transport",
+        "description": "Invoke any MCP tool via a simple HTTP POST. No special transport required.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "tool"
+                ],
+                "properties": {
+                  "tool": {
+                    "type": "string",
+                    "enum": [
+                      "search_last_minute_slots",
+                      "get_slot_details",
+                      "book_slot",
+                      "get_booking_status"
+                    ]
+                  },
+                  "arguments": {
+                    "type": "object",
+                    "description": "Tool-specific arguments"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tool": {
+                      "type": "string"
+                    },
+                    "result": {}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "operationId": "healthCheck",
@@ -239,6 +541,14 @@
     }
   },
   "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "Register free at POST /api/keys/register"
+      }
+    },
     "schemas": {
       "Slot": {
         "type": "object",
