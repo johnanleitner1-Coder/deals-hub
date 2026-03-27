@@ -8,7 +8,7 @@ and more across 150+ US cities. All deals are verified available. Inventory refr
 - Categories: events, wellness, beauty, hospitality, home_services, professional_services
 - Availability window: 0–72 hours from now
 - Payment: Stripe checkout — card authorized (not charged) until booking confirmed on source platform
-- Coverage: 150+ US cities, 10642 live slots as of 2026-03-27 18:56 UTC
+- Coverage: 150+ US cities, 2902 live slots as of 2026-03-27 19:00 UTC
 
 ## For AI Agents — REST API
 
