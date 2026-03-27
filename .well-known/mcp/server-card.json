@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0",
+  "name": "lastminutedeals",
+  "display_name": "LastMinuteDeals",
+  "description": "Search and book last-minute deals on events, wellness, beauty, and hospitality available within 72 hours. Covers 150+ US cities.",
+  "version": "1.0.0",
+  "transport": {
+    "type": "http",
+    "url": "https://api.lastminutedealshq.com/mcp"
+  },
+  "tools": [
+    {
+      "name": "search_last_minute_slots",
+      "description": "Search available deals by category, city, price, and urgency"
+    },
+    {
+      "name": "get_slot_details",
+      "description": "Get full details for a specific slot by slot_id"
+    },
+    {
+      "name": "book_slot",
+      "description": "Book a slot \u2014 returns Stripe checkout URL"
+    },
+    {
+      "name": "get_booking_status",
+      "description": "Check booking status by booking_id"
+    }
+  ],
+  "authentication": {
+    "type": "api_key",
+    "header": "X-API-Key",
+    "registration_url": "https://api.lastminutedealshq.com/api/keys/register"
+  },
+  "openapi_url": "https://lastminutedealshq.com/openapi.json",
+  "contact": {
+    "email": "support@lastminutedealshq.com",
+    "url": "https://lastminutedealshq.com"
+  }
+}
