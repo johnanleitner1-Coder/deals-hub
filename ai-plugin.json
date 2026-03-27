@@ -1,0 +1,17 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "LastMinuteDeals",
+  "name_for_model": "lastminutedeals",
+  "description_for_human": "Search and book last-minute deals on events, wellness, beauty, and hospitality within 72 hours.",
+  "description_for_model": "Search real-time last-minute deals and book them. Use searchSlots to find available deals by category/city/price, getSlotQuote to confirm availability, then bookSlot to initiate checkout. Card is only charged after booking is confirmed \u2014 never for failed bookings. Use executeIntent for autonomous one-shot booking.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://lastminutedealshq.com/openapi.json"
+  },
+  "logo_url": "https://lastminutedealshq.com/icon.png",
+  "contact_email": "support@lastminutedealshq.com",
+  "legal_info_url": "https://lastminutedealshq.com/#terms"
+}
