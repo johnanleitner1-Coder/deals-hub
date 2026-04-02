@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- generated: Apr 02, 2026 07:15 PM UTC -->
+  <!-- generated: Apr 02, 2026 07:20 PM UTC -->
   <meta charset="UTF-8" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
@@ -616,7 +616,7 @@
 <header class="site-header">
   <div class="header-inner">
     <a href="/" class="logo"><img src="/logo.png" alt="Last Minute Deals" /></a>
-    <span class="header-meta">Updated Apr 02, 2026 07:15 PM UTC</span>
+    <span class="header-meta">Updated Apr 02, 2026 07:20 PM UTC</span>
   </div>
 </header>
 
@@ -1970,7 +1970,7 @@ function submitBooking() {
   var btn = document.getElementById('btn-pay');
   btn.textContent = 'Processing…';
   btn.disabled = true;
-  var apiUrl = BOOKING_API_URL || '/api/book';
+  var apiUrl = (BOOKING_API_URL ? BOOKING_API_URL.replace(/\/+$/, '') + '/api/book' : '/api/book');
 
   // If no booking server is configured, show a graceful coming-soon message
   if (!BOOKING_API_URL) {
