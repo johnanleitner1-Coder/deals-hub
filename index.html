@@ -613,7 +613,7 @@
 <header class="site-header">
   <div class="header-inner">
     <a href="/" class="logo"><img src="/logo.png" alt="Last Minute Deals" /></a>
-    <span class="header-meta">Updated Apr 02, 2026 07:00 PM UTC</span>
+    <span class="header-meta">Updated Apr 02, 2026 07:06 PM UTC</span>
   </div>
 </header>
 
@@ -1859,6 +1859,8 @@
 
 <script>
 var currentSlot = null;
+var BOOKING_API_URL = 'https://api.lastminutedealshq.com';
+var WEBSITE_API_KEY = 'lmd_f35d0e4575eb3d1614dff82c5524e9894c3b9635c403c063';
 
 function fmtPrice(val) {
   if (val == null) return 'See details';
@@ -1954,8 +1956,6 @@ function closeOnBackdrop(e) {
   if (e.target === document.getElementById('modal-overlay')) closeModal();
 }
 
-var BOOKING_API_URL = 'https://api.lastminutedealshq.com';
-
 function submitBooking() {
   var name  = document.getElementById('checkout-name').value.trim();
   var email = document.getElementById('checkout-email').value.trim();
@@ -1982,7 +1982,7 @@ function submitBooking() {
 
   fetch(apiUrl, {
     method: 'POST',
-    headers: {'Content-Type': 'application/json'},
+    headers: {'Content-Type': 'application/json', 'X-API-Key': WEBSITE_API_KEY},
     body: JSON.stringify({
       slot_id: currentSlot.slot_id,
       customer_name: name,
