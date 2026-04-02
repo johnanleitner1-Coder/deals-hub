@@ -11,7 +11,7 @@
   },
   "servers": [
     {
-      "url": "https://api.lastminutedealshq.com",
+      "url": "https://web-production-dc74b.up.railway.app",
       "description": "Booking API"
     }
   ],
