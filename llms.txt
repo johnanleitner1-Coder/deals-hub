@@ -9,7 +9,7 @@ This is not a scraper or a deal aggregator. It is a primitive in the agent econo
   observe → decide → execute → learn → improve
 
 ## What this handles end-to-end
-- Discovery: 8+ platforms, 150+ US cities, 72 live slots as of 2026-04-15 22:00 UTC
+- Discovery: 8+ platforms, 150+ US cities, 75 live slots as of 2026-04-15 22:30 UTC
 - Categories: events, wellness, beauty, hospitality, home_services, professional_services
 - Availability window: 0–72 hours from now
 - Execution: multi-path retry engine (7 strategies), Playwright automation per platform
